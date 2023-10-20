@@ -294,9 +294,124 @@ Route::get('/', function () {
 - Si realizamos una prueba mostrará error porque no existe un modelo, vamos a crear un archivo `Post` en el directorio `app/Models` para ello, quedando de la siguiente forma:
 
 ![postModel](images/postModel.png)
--
 
-## **- Find a Composer Package for Post Metadata**
+## **12- Find a Composer Package for Post Metadata**
+
+En el paso anterior se consideró agregar metadatos en la parte superior de cada archivo de publicación. Este formato de metadatos  es conocido como Yaml Front Matter.
+
+- Instalaremos vía Composer un paquete que permita trabajar con ello, dentro de la máquina virtual ejecutamos.
+
+```bash
+cd /vagrant
+cd sites
+cd lfts.isw811.xyz
+composer require spatie/yaml-front-matter
+```
+- Agregamos la metadaba a cada archivo de publicación, cambiando a la numerción que corresponda.
+
+```html
+---
+title: My First Post
+slug: my-first-post
+excerpt: Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+date: 2023-10-19
+---
+```
+
+- Trabajaremos con Objetos entonces nos ubicamos en `app/Model/Post.php` y vamos a definir los atributos y constructor de las publicaciones los cuales se usaran en la metadata.
+
+```php
+public $title;
+    public $excerpt;
+    public $date;
+    public $body;
+    public $slug;
+
+    public function __construct($title,$excerpt,$date,$body,$slug) {
+        $this->title = $title;
+        $this->excerpt = $excerpt;
+        $this->date = $date;
+        $this->body = $body;
+        $this->slug = $slug;
+    }
+```
+- Así mismo modifcamos tambien el método `all()` y `find()`
+
+```php
+ public static function all()
+    {
+        return collect(File::files(resource_path("posts")))
+        ->map(fn($file)=> YamlFrontMatter::parseFile($file))
+        ->map(fn($document)=> new Post(
+            $document->title,
+            $document->excerpt,
+            $document->date,
+            $document->body(),
+            $document->slug
+        ));
+    }
+
+    public static function find($slug){
+        return static::all()->firstWhere('slug',$slug);
+    }
+```
+- Modificamos las vistas para una publicación
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Blog</title>
+    <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+    <article>
+        <h1><?=$post->title;?></h1>
+        <div>
+            <?=$post->body;?>
+        </div>
+    </article>
+
+    <a href="/">GO BACK</a>
+</body>
+```
+- Finalmente modificamos las vistas para todas las publicaciones
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Blog</title>
+    <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+
+    <?php foreach ($posts as $post) : ?>
+        <article>
+            <h1>
+                <a href="/posts/<?= $post->slug;?>">
+                <?= $post->title;?>
+                </a>
+                
+            </h1>
+            
+            <div>
+                <?= $post->excerpt;?>
+            </div>
+
+        </article>    
+    
+    <?php endforeach;?>
+
+</body>
+</html>
+```
+
+
 ## **- Collection Sorting and Caching Refresher**
 #
 
