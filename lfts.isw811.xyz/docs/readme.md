@@ -1,6 +1,8 @@
 # **Create a Blog with Laravel 8**
 El objetivo de este curso es desarrollar un blog para empresa o personal a través del Framework Laravel. 
 
+[Code here](https://github.com/fborge/lfts.isw811.xyz/tree/master/lfts.isw811.xyz)
+
 # **Section 2: THE BASICS**
 
 ## **05- How a Route Loads a view**
@@ -262,8 +264,38 @@ para que la próxima vez que se realice, ya tenga los datos a mano y no tenga qu
 
 Con ello eventualemente será más productivo las consultas y la utilización de bases de datos.
 
+## **11- Use the Filesystem Class To Read a Directory**
 
-## **- Use the Filesystem Class To Read a Directory**
+Vamos a continuar e implementar la búsqueda de una publicación en el blog por su título y pasar dicha publicación a una nueva vista llamada 'post' .
+
+- Nos movemos a `routes/web.php` y modificamos la ruta 'post' que se creó anteriormente, para que nos permita buscar una publicación.
+
+```php
+Route::get('post/{post}', function ($slug) {
+     
+    return view('post',[
+        'post'=> Post::find($slug)
+    ]);
+
+})->where('post','[A-z_\-]+');
+```
+
+- Luego agregamos otra ruta que nos permite listar todas las publicaciones del blog
+
+```php
+Route::get('/', function () {
+
+    return view('posts',[
+        'posts' => Post::all()
+    ]);
+});
+```
+
+- Si realizamos una prueba mostrará error porque no existe un modelo, vamos a crear un archivo `Post` en el directorio `app/Models` para ello, quedando de la siguiente forma:
+
+![postModel](images/postModel.png)
+-
+
 ## **- Find a Composer Package for Post Metadata**
 ## **- Collection Sorting and Caching Refresher**
 #
